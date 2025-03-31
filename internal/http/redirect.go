@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/OutClimb/Redirect/internal/app"
 	"github.com/gin-gonic/gin"
@@ -76,7 +77,12 @@ func (h *httpLayer) deleteRedirect(c *gin.Context) {
 }
 
 func (h *httpLayer) findRedirect(c *gin.Context) {
-	if redirect, err := h.app.FindRedirect(c.Request.URL.Path); err != nil {
+	path := c.Request.URL.Path
+	if strings.HasSuffix(path, "/") {
+		path = path[:len(path)-1]
+	}
+
+	if redirect, err := h.app.FindRedirect(path); err != nil {
 		c.Redirect(http.StatusTemporaryRedirect, "https://outclimb.gay")
 	} else {
 		c.Redirect(http.StatusTemporaryRedirect, redirect.ToUrl)
