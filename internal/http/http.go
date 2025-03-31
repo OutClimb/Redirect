@@ -23,7 +23,6 @@ func New(appLayer app.AppLayer) *httpLayer {
 		h.engine.SetTrustedProxies(strings.Split(proxies, ","))
 	}
 
-	h.engine.Use(CORSMiddleware())
 	h.setupRedirectRoutes()
 	h.setupApiRoutes()
 
