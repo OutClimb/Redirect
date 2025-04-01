@@ -2,13 +2,15 @@ package http
 
 import (
 	"os"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(h *httpLayer, role string, issue string) gin.HandlerFunc {
+func AuthMiddleware(h *httpLayer, role string, issues string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -26,6 +28,8 @@ func AuthMiddleware(h *httpLayer, role string, issue string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		issueRange := strings.Split(issues, ",")
 
 		claims := token.Claims.(jwt.MapClaims)
 		if expiration, err := claims.GetExpirationTime(); err != nil || !expiration.After(time.Now()) {
@@ -60,7 +64,7 @@ func AuthMiddleware(h *httpLayer, role string, issue string) gin.HandlerFunc {
 			c.JSON(401, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
-		} else if userIssue != issue {
+		} else if slices.Contains(issueRange, userIssue.(string)) {
 			c.JSON(401, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
@@ -68,5 +72,21 @@ func AuthMiddleware(h *httpLayer, role string, issue string) gin.HandlerFunc {
 			c.Set("user_id", uint(userId.(float64)))
 			c.Next()
 		}
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
 }

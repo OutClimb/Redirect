@@ -23,6 +23,7 @@ func New(appLayer app.AppLayer) *httpLayer {
 		h.engine.SetTrustedProxies(strings.Split(proxies, ","))
 	}
 
+	h.engine.Use(CORSMiddleware())
 	h.setupRedirectRoutes()
 	h.setupApiRoutes()
 
@@ -43,6 +44,11 @@ func (h *httpLayer) setupApiRoutes() {
 		// Login Route
 		api.POST("/token", h.createToken)
 
+		adminResetApi := api.Group("/").Use(AuthMiddleware(h, "admin", "api,reset"))
+		{
+			adminResetApi.GET("/self", h.getSelf)
+		}
+
 		adminReset := api.Group("/").Use(AuthMiddleware(h, "admin", "reset"))
 		{
 			adminReset.PUT("/password", h.updatePassword)
@@ -51,8 +57,6 @@ func (h *httpLayer) setupApiRoutes() {
 		// Admin Authenticated Routes
 		adminApi := api.Group("/").Use(AuthMiddleware(h, "admin", "api"))
 		{
-			adminApi.GET("/self", h.getSelf)
-
 			adminApi.GET("/redirect", h.getRedirects)
 			adminApi.GET("/redirect/:id", h.getRedirect)
 			adminApi.POST("/redirect", h.createRedirect)
