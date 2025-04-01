@@ -64,7 +64,7 @@ func AuthMiddleware(h *httpLayer, role string, issues string) gin.HandlerFunc {
 			c.JSON(401, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
-		} else if slices.Contains(issueRange, userIssue.(string)) {
+		} else if !slices.Contains(issueRange, userIssue.(string)) {
 			c.JSON(401, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
