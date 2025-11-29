@@ -1,6 +1,8 @@
 # OutClimb Redirect Manager
 
-This application manages redirect for OutClimb's shorten URL.
+**Notice: This service has been archived. We now manage our redirects throught he general OutClimb Web Service: https://github.com/OutClimb/OutClimb**
+
+This application used to manage redirects for OutClimb's shorten URL.
 
 ## Structure
 
